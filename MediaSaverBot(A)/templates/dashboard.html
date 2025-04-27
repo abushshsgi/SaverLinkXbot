@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Bot Admin Panel{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="card stats-card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Jami foydalanuvchilar</h5>
+                <p class="display-4">{{ stats['total_users'] }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Jami yuklanishlar</h5>
+                <p class="display-4">{{ stats['total_downloads'] }}</p>
+                <small>Muvaffaqiyatli: {{ stats['successful_downloads'] }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">Bugungi yangi</h5>
+                <p class="display-4">{{ stats['today_new_users'] }}</p>
+                <small>Yuklanishlar: {{ stats['today_downloads'] }}</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">Faol (24s)</h5>
+                <p class="display-4">{{ stats['active_users'] }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="chart-container">
+            <div id="platformChart"></div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="table-container">
+            <h4>So'nggi yuklanishlar</h4>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Vaqt</th>
+                            <th>Foydalanuvchi</th>
+                            <th>Username</th>
+                            <th>Platforma</th>
+                            <th>Holat</th>
+                            <th>URL</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for download, user in stats['recent_downloads'] %}
+                        <tr>
+                            <td>{{ download.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                            <td>{{ user.first_name or "Noma'lum" }}</td>
+                            <td>{% if user.username %}@{{ user.username }}{% else %}Yo'q{% endif %}</td>
+                            <td>
+                                <span class="badge bg-secondary">{{ download.platform }}</span>
+                            </td>
+                            <td>
+                                {% if download.status == 'success' %}
+                                <span class="badge bg-success">✓</span>
+                                {% elif download.status == 'processing' %}
+                                <span class="badge bg-warning">⌛</span>
+                                {% else %}
+                                <span class="badge bg-danger">✗</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ download.url }}" target="_blank" class="text-truncate d-inline-block" style="max-width: 200px;">
+                                    {{ download.url }}
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    // Platform chart
+    var platformData = {{ platform_data|tojson }};
+    var data = [{
+        values: Object.values(platformData),
+        labels: Object.keys(platformData),
+        type: 'pie',
+        hole: 0.4,
+        marker: {
+            colors: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']
+        }
+    }];
+    var layout = {
+        title: "Platformalar bo'yicha yuklanishlar",
+        height: 300,
+        margin: {t: 30, b: 0, l: 0, r: 0},
+        showlegend: true
+    };
+    Plotly.newPlot('platformChart', data, layout);
+
+    // Real-time update
+    setInterval(function() {
+        fetch('/update_stats')
+            .then(response => response.json())
+            .then(data => {
+                // Update statistics
+                document.querySelector('.bg-primary .display-4').textContent = data.total_users;
+                document.querySelector('.bg-success .display-4').textContent = data.total_downloads;
+                document.querySelector('.bg-info .display-4').textContent = data.today_new_users;
+                document.querySelector('.bg-warning .display-4').textContent = data.active_users;
+                
+                // Update platform chart
+                Plotly.update('platformChart', {
+                    values: [Object.values(data.platform_stats)],
+                    labels: [Object.keys(data.platform_stats)]
+                });
+            });
+    }, 5000);  // Har 5 soniyada yangilanadi
+</script>
+{% endblock %} 
