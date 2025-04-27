@@ -5,3 +5,4 @@ requests
 beautifulsoup4
 pyTelegramBotAPI 
 yt-dlp
+instaloader
