@@ -99,7 +99,7 @@ def home():
                 <a href="https://t.me/{{ bot_username }}" class="btn btn-primary mt-3" target="_blank">Open in Telegram</a>
                 <div class="mt-3">
                     <a href="/login" class="btn btn-outline-light me-2">Admin Login</a>
-                    <a href="/dashboard" class="btn btn-outline-info me-2">Dashboard</a>
+                  
                 </div>
             </div>
             
@@ -143,9 +143,11 @@ def home():
             </div>
             
             <footer class="text-center mt-5 mb-5">
-            
+                <p>  This bot was developed by Abdurahim Oripov</p>
+                <p>
                 <p>© 2025 Media Downloader Bot. All rights reserved.</p>
                 <p>
+               
                     <a href="#" class="text-decoration-none me-3">Privacy Policy</a>
                     <a href="#" class="text-decoration-none me-3">Terms of Service</a>
                     <a href="#" class="text-decoration-none">Support</a>
