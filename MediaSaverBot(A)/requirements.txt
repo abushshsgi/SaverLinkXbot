@@ -1,9 +1,0 @@
-Flask
-Flask-SQLAlchemy
-Flask-Login
-requests
-beautifulsoup4
-pyTelegramBotAPI 
-yt-dlp
-instaloader
-python-telegram-bot
